@@ -1,0 +1,103 @@
+#include "convert.hpp"
+#include <string>
+#include <sstream>
+#include <unordered_set>
+#include <string>
+#include "MyPriorityQueue.hpp"
+#include <iostream>
+#include <unordered_map>
+#include <algorithm>
+#include <string>
+
+// You should not need to change this function.
+void loadWordsIntoTable(std::unordered_set<std::string> & words, std::istream & in)
+{
+	std::string line, word;
+	std::stringstream ss;
+
+	while(	getline(in, line) )
+	{
+		ss.clear();
+		ss << line;
+		while( ss >> word )
+		{
+			words.insert( word );
+		}
+	}
+
+}
+
+
+
+// You probably want to change this function.
+std::vector< std::string > convert(const std::string & s1, const std::string & s2, const std::unordered_set<std::string> & words)
+{
+	std::vector< std::string > ret;
+	if(s1 == "" || s2 == ""){
+		return ret;
+	}
+	if(s1 == s2){
+		return ret;
+	}
+
+	MyPriorityQueue<std::string> mpq;
+	// unsigned diff_letters = 0;
+	// unsigned lcd = 10;
+	// Node *z = new Node{s1, diff_letters, lcd};
+
+	std::vector<std::string> garbage;
+	std::unordered_map<std::string, std::string> path;
+	mpq.insert(s1);
+	while(!mpq.isEmpty()){
+			unsigned level = mpq.size();
+			while(level != 0){
+				std::string word = mpq.min();
+				mpq.extractMin();
+				garbage.push_back(word);
+				for(unsigned i = 0; i <word.size(); i++){
+					std::string temp_word = word;
+					bool inserted_already = false;
+					for(char c = 97; c < 123; c++){
+						temp_word[i] = c;
+						if(temp_word == s2){
+							path.insert({s2, word});
+							ret.push_back(s2);
+							for(int k = 0; k<path.size(); k++){
+								ret.push_back(path.at(ret.at(k)));
+								if(ret.at(k+1) == s1){
+									reverse(ret.begin(), ret.end());
+									return ret;
+								}
+							}
+							return ret;
+						}
+						if(word.compare(temp_word) ==0){
+							continue;
+						}
+						if(words.find(temp_word) != words.end()){
+							for(auto w: ret){
+								if(w == temp_word){
+									inserted_already = true;
+									break;
+								}
+							}
+							for(auto w: garbage){
+								if(w == temp_word){
+									inserted_already = true;
+									break;
+								}
+							}
+							if(!inserted_already){
+								path.insert({temp_word, word});
+								mpq.insert(temp_word);
+							}
+						}
+					}
+				}
+				level--;
+			}
+		}
+		return ret;
+
+}
+
